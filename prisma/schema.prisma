@@ -1,0 +1,202 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum SessionType {
+  TWO_WAY
+  ONE_WAY
+}
+
+enum SessionStatus {
+  PENDING
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum TransactionType {
+  DAILY_LOGIN
+  ESCROW_HOLD
+  TEACHER_PAYOUT
+  REFUND
+  SUBSCRIPTION_PAYMENT
+  WITHDRAWAL
+}
+
+enum SkillOfferType {
+  OFFERING
+  LEARNING
+}
+
+enum ProficiencyLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  password    String
+  name        String?
+  avatarUrl   String?
+  coins       Int      @default(0)
+  escrowCoins Int      @default(0)
+  isVerified  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relasi
+  subscriptions        Subscription[]
+  userSkills           UserSkill[]
+  sessionsAsTeacher    Session[]         @relation("TeacherSessions")
+  sessionsAsStudent    Session[]         @relation("StudentSessions")
+  coinTransactions     CoinTransaction[]
+  givenRatings         Rating[]          @relation("ReviewerRatings")
+  receivedRatings      Rating[]          @relation("RevieweeRatings")
+  issuedCertificates   Certificate[]     @relation("TeacherCertificates")
+  receivedCertificates Certificate[]     @relation("StudentCertificates")
+
+  @@map("users")
+}
+
+model Subscription {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  planName  String
+  status    String   @default("ACTIVE")
+  startDate DateTime @default(now())
+  endDate   DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  icon      String?
+  createdAt DateTime @default(now())
+
+  skills Skill[]
+
+  @@map("categories")
+}
+
+model Skill {
+  id          Int      @id @default(autoincrement())
+  categoryId  Int
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+
+  category   Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  userSkills UserSkill[]
+  sessions   Session[]
+
+  @@map("skills")
+}
+
+model UserSkill {
+  id               Int              @id @default(autoincrement())
+  userId           Int
+  skillId          Int
+  type             SkillOfferType // OFFERING atau LEARNING
+  proficiencyLevel ProficiencyLevel @default(BEGINNER)
+  offeredCoins     Int              @default(0) // Koin yang ditawarkan/diminta
+  userNotes        String? // Catatan/deskripsi khusus dari user (misal: "Bisa ngajar piano klasik untuk pemula")
+  createdAt        DateTime         @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, skillId, type])
+  @@map("user_skills")
+}
+
+model Session {
+  id              Int           @id @default(autoincrement())
+  type            SessionType // TWO_WAY atau ONE_WAY
+  status          SessionStatus @default(PENDING)
+  coinAmount      Int // Total koin disepakati
+  scheduledAt     DateTime
+  completedAt     DateTime?
+  teacherId       Int
+  studentId       Int
+  skillId         Int
+  exchangeSkillId Int?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relasi
+  teacher      User              @relation("TeacherSessions", fields: [teacherId], references: [id])
+  student      User              @relation("StudentSessions", fields: [studentId], references: [id])
+  skill        Skill             @relation(fields: [skillId], references: [id])
+  transactions CoinTransaction[]
+  ratings      Rating[]
+  certificate  Certificate?
+
+  @@map("sessions")
+}
+
+model CoinTransaction {
+  id          Int             @id @default(autoincrement())
+  userId      Int
+  sessionId   Int?
+  amount      Int // Positif (+) untuk koin masuk, Negatif (-) untuk koin keluar
+  type        TransactionType
+  description String?
+  createdAt   DateTime        @default(now())
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session Session? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@map("coin_transactions")
+}
+
+model Rating {
+  id         Int      @id @default(autoincrement())
+  sessionId  Int
+  reviewerId Int
+  revieweeId Int
+  stars      Int // 1 sampai 5
+  comment    String?
+  createdAt  DateTime @default(now())
+
+  session  Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  reviewer User    @relation("ReviewerRatings", fields: [reviewerId], references: [id])
+  reviewee User    @relation("RevieweeRatings", fields: [revieweeId], references: [id])
+
+  // Satu reviewer hanya bisa rating satu kali per sesi
+  @@unique([sessionId, reviewerId])
+  @@map("ratings")
+}
+
+model Certificate {
+  id            Int      @id @default(autoincrement())
+  certificateNo String   @unique // Contoh: "CERT-202610-001"
+  sessionId     Int      @unique
+  studentId     Int
+  teacherId     Int
+  skillName     String
+  issuedAt      DateTime @default(now())
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  student User    @relation("StudentCertificates", fields: [studentId], references: [id])
+  teacher User    @relation("TeacherCertificates", fields: [teacherId], references: [id])
+
+  @@map("certificates")
+}
