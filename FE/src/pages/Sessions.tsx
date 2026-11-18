@@ -76,7 +76,7 @@ export default function Sessions() {
             const res = await api.updateSessionStatus(s.id, status)
             setFlash({ tone: "success", text: res.message })
             sessions.reload()
-            refreshUser().catch(() => {})
+            refreshUser().catch(() => { })
         } catch (err) {
             setFlash({ tone: "error", text: (err as Error).message })
         } finally {
@@ -89,7 +89,7 @@ export default function Sessions() {
     return (
         <CenterLayout width={720}>
             <h1 className="title-xl">My Sessions</h1>
-            <p className="mt-3 text-[17px] leading-[25px] text-muted">Your swaps and paid sessions, all in one place.</p>
+            <p className="mt-3 text-[17px] leading-6.25 text-muted">Your swaps and paid sessions, all in one place.</p>
 
             <div className="mt-5 flex flex-wrap gap-2" role="tablist" aria-label="Filter sessions">
                 {FILTERS.map((f) => (
@@ -175,11 +175,11 @@ function SessionCard({
     const rated = s.ratings.some((r) => r.reviewerId === meId)
 
     return (
-        <article className="card-dark p-[17px]">
+        <article className="card-dark p-4.25">
             <div className="flex flex-wrap items-center gap-3.5">
                 <span
                     className={cn(
-                        "grid size-[52px] shrink-0 place-items-center rounded-xl text-[20px] text-pampas",
+                        "grid size-13 shrink-0 place-items-center rounded-xl text-[20px] text-pampas",
                         tintBg[tintFor(s.skill.name)]
                     )}
                     aria-hidden
@@ -189,7 +189,7 @@ function SessionCard({
                 <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                         <p className="truncate font-display text-[16px] font-semibold">{s.skill.name}</p>
-                        <span className={cn("inline-flex h-[22px] items-center rounded-full px-2.5 text-[11px] font-medium", statusStyle[s.status])}>
+                        <span className={cn("inline-flex h-5.5 items-center rounded-full px-2.5 text-[11px] font-medium", statusStyle[s.status])}>
                             {statusLabel[s.status]}
                         </span>
                     </div>

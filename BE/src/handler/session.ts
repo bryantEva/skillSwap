@@ -145,7 +145,7 @@ export const getSessions: RequestHandler<{ userId: string }> = async (req, res) 
                 teacher: { select: { id: true, name: true, avatarUrl: true } },
                 student: { select: { id: true, name: true, avatarUrl: true } },
                 skill: { select: { id: true, name: true } },
-                rating: true,
+                ratings: true,
                 certificate: true
             },
             orderBy: { scheduledAt: "desc" }
@@ -170,7 +170,7 @@ export const getSessionById: RequestHandler<{ sessionId: string }> = async (req,
                 student: { select: { id: true, name: true, avatarUrl: true } },
                 skill: { select: { id: true, name: true } },
                 transactions: true,
-                rating: true,
+                ratings: true,
                 certificate: true
             }
         })
