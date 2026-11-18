@@ -1,6 +1,48 @@
 import type { RequestHandler } from "express"
 import { prisma } from "../prisma.js"
 
+export const getAllUsers: RequestHandler = async (req, res) => {
+    try {
+        const users = await prisma.user.findMany({
+            select: {
+                id: true,
+                name: true,
+                avatarUrl: true,
+                isVerified: true,
+                userSkills: {
+                    include: { skill: { select: { id: true, name: true } } }
+                },
+                receivedRatings: { select: { stars: true } },
+                sessionsAsTeacher: {
+                    where: { status: "COMPLETED" },
+                    select: { id: true }
+                }
+            }
+        })
+
+        const data = users.map((u) => {
+            const { receivedRatings, sessionsAsTeacher, ...rest } = u
+            const totalRatings = receivedRatings.length
+            const averageStars =
+                totalRatings > 0
+                    ? receivedRatings.reduce((sum, r) => sum + r.stars, 0) / totalRatings
+                    : 0
+
+            return {
+                ...rest,
+                averageStars,
+                totalRatings,
+                completedSessions: sessionsAsTeacher.length
+            }
+        })
+
+        res.status(200).json({ message: "Daftar user berhasil diambil.", data })
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ error: "Gagal mengambil daftar user." })
+    }
+}
+
 export const updateUserProfile: RequestHandler<{ userId: string }> = async (req, res) => {
     const userId = parseInt(req.params.userId)
     const data = req.body

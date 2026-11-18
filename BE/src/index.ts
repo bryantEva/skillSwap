@@ -4,7 +4,7 @@ import express from "express"
 // Handler
 import { login, register } from "./handler/auth.js"
 import { addSkill, getSkills, getCategories } from "./handler/skill.js"
-import { getUserProfle, updateUserProfile } from "./handler/user.js"
+import { getAllUsers, getUserProfle, updateUserProfile } from "./handler/user.js"
 import { addSession, getSessions, getSessionById, updateSessionStatus } from "./handler/session.js"
 import { addRating, getUserRatings } from "./handler/rating.js"
 import { getCertificate, getUserCertificates } from "./handler/certificate.js"
@@ -28,6 +28,7 @@ app.get("/category", getCategories)
 // ─── Protected Routes (wajib login / bearer token) ───────────────────────────
 
 // User
+app.get("/users", verifyToken, getAllUsers)
 app.get("/user/:userId", verifyToken, getUserProfle)
 app.put("/user/:userId", verifyToken, updateUserProfile)
 
