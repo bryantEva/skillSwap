@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "tsx --watch src",
-    "gen": "npx prisma generate"
+    "gen": "npx prisma generate",
+    "build": "prisma generate",
+    "start": "tsx src"
   },
   "keywords": [],
   "author": "",
