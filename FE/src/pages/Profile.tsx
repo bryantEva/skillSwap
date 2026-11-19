@@ -75,7 +75,7 @@ export default function Profile() {
                 <>
                     {/* Header profil */}
                     <div className="mt-8 flex items-start gap-5">
-                        <Avatar src={profile.avatarUrl} name={profile.name} size={104} className="max-sm:!size-20" />
+                        <Avatar src={profile.avatarUrl} name={profile.name} size={104} className="max-sm:size-20!" />
                         <div className="min-w-0 pt-1">
                             <h1 className="font-display text-[32px] leading-[1.1] font-bold tracking-[-0.03em] sm:text-[36px]">
                                 {displayName(profile.name)}
@@ -120,8 +120,36 @@ export default function Profile() {
                     )}
 
                     <h2 className="title-section mt-7">About</h2>
-                    <p className="mt-2 max-w-[440px] text-[17px] leading-[24px] text-muted">{aboutText(profile, teach, want)}</p>
-                    <hr className="mt-4 max-w-[424px] border-[#868683]" />
+                    <p className="mt-2 max-w-110 text-[17px] leading-6 text-muted">{aboutText(profile, teach, want)}</p>
+                    <hr className="mt-4 max-w-106 border-[#868683]" />
+
+                    {(profile.whatsappNumber || profile.instagramUsername) && (
+                        <>
+                            <h2 className="title-section mt-6 mb-3">Contact</h2>
+                            <div className="flex flex-wrap gap-2.5">
+                                {profile.whatsappNumber && (
+                                    <a
+                                        href={`https://wa.me/${profile.whatsappNumber}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex h-8 items-center rounded-full border border-ink px-3 text-[13px] font-medium hover:bg-pampas"
+                                    >
+                                        WhatsApp
+                                    </a>
+                                )}
+                                {profile.instagramUsername && (
+                                    <a
+                                        href={`https://instagram.com/${profile.instagramUsername}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex h-8 items-center rounded-full border border-ink px-3 text-[13px] font-medium hover:bg-pampas"
+                                    >
+                                        @{profile.instagramUsername}
+                                    </a>
+                                )}
+                            </div>
+                        </>
+                    )}
 
                     <h2 className="title-section mt-6 mb-3">Skills I Teach</h2>
                     {teach.length ? (
@@ -174,7 +202,7 @@ export default function Profile() {
                     {ratings && ratings.data.length > 0 && (
                         <>
                             <h2 className="title-section mt-6 mb-3">Recent reviews</h2>
-                            <ul className="flex max-w-[424px] flex-col gap-3">
+                            <ul className="flex max-w-106 flex-col gap-3">
                                 {ratings.data.slice(0, 3).map((r) => (
                                     <li key={r.id} className="flex gap-3">
                                         <Avatar src={r.reviewer.avatarUrl} name={r.reviewer.name} size={32} />
@@ -195,7 +223,7 @@ export default function Profile() {
                         </>
                     )}
 
-                    <div className="mt-7 max-w-[424px]">
+                    <div className="mt-7 max-w-106">
                         {isMe ? (
                             <Link to="/setup" className="btn-primary">
                                 Edit my skills →
@@ -224,6 +252,8 @@ function EditProfileForm({
     const { patchUser } = useAuth()
     const [name, setName] = useState(profile.name ?? "")
     const [avatarUrl, setAvatarUrl] = useState(profile.avatarUrl ?? "")
+    const [whatsappNumber, setWhatsappNumber] = useState(profile.whatsappNumber ?? "")
+    const [instagramUsername, setInstagramUsername] = useState(profile.instagramUsername ?? "")
     const [busy, setBusy] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
@@ -234,10 +264,17 @@ function EditProfileForm({
         try {
             const res = await api.updateUser(profile.id, {
                 name: name.trim() || undefined,
-                avatarUrl: avatarUrl.trim() || undefined
+                avatarUrl: avatarUrl.trim() || undefined,
+                whatsappNumber: whatsappNumber.trim(),
+                instagramUsername: instagramUsername.trim()
             })
             patchUser({ name: res.data.name, avatarUrl: res.data.avatarUrl })
-            onDone({ name: res.data.name, avatarUrl: res.data.avatarUrl })
+            onDone({
+                name: res.data.name,
+                avatarUrl: res.data.avatarUrl,
+                whatsappNumber: res.data.whatsappNumber,
+                instagramUsername: res.data.instagramUsername
+            })
         } catch (err) {
             setError((err as Error).message)
         } finally {
@@ -246,13 +283,32 @@ function EditProfileForm({
     }
 
     return (
-        <form onSubmit={submit} className="card-dark mt-5 flex max-w-[480px] flex-col gap-3 p-5">
+        <form onSubmit={submit} className="card-dark mt-5 flex max-w-120 flex-col gap-3 p-5">
             <label className="block">
                 <span className="mb-1.5 block text-[13px] text-dim">Name</span>
                 <input
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="h-11 w-full rounded-full border border-card-2 bg-ink px-4 text-[15px] text-pampas outline-none focus:border-dim"
+                />
+            </label>
+            <label className="block">
+                <span className="mb-1.5 block text-[13px] text-dim">WhatsApp</span>
+                <input
+                    type="tel"
+                    value={whatsappNumber}
+                    onChange={(e) => setWhatsappNumber(e.target.value)}
+                    placeholder="081234567890"
+                    className="h-11 w-full rounded-full border border-card-2 bg-ink px-4 text-[15px] text-pampas outline-none placeholder:text-[#8b897f] focus:border-dim"
+                />
+            </label>
+            <label className="block">
+                <span className="mb-1.5 block text-[13px] text-dim">Instagram</span>
+                <input
+                    value={instagramUsername}
+                    onChange={(e) => setInstagramUsername(e.target.value)}
+                    placeholder="username (tanpa @)"
+                    className="h-11 w-full rounded-full border border-card-2 bg-ink px-4 text-[15px] text-pampas outline-none placeholder:text-[#8b897f] focus:border-dim"
                 />
             </label>
             <label className="block">

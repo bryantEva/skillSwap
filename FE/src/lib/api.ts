@@ -122,7 +122,12 @@ export const api = {
     // Users
     getUsers: () => get<{ data: PublicUser[] }>("/users").then((r) => r.data),
     getUser: (userId: number) => get<{ data: UserProfile }>(`/user/${userId}`).then((r) => r.data),
-    updateUser: (userId: number, data: { name?: string; avatarUrl?: string }) =>
+    updateUser: (userId: number, data: {
+        name?: string;
+        avatarUrl?: string;
+        whatsappNumber?: string;
+        instagramUsername?: string
+    }) =>
         put<{ message: string; data: UserProfile }>(`/user/${userId}`, data),
 
     // User skills

@@ -59,6 +59,8 @@ export interface UserProfile {
     email: string
     name: string | null
     avatarUrl: string | null
+    whatsappNumber: string | null
+    isntagramUsername: string | null
     coins: number
     escrowCoins: number
     isVerified: boolean
