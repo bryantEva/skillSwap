@@ -26,12 +26,22 @@ export const verifyToken: RequestHandler = (req, res, next) => {
         return
     }
 
+    const secret = process.env.JWT_SECRET;
+
+    if (!secret) {
+        res.status(500).json({
+            error: "JWT_SECRET belum dikonfigurasi."
+        });
+        return;
+    }
+
     try {
-        const secret = process.env.JWT_SECRET!
-        const decoded = jwt.verify(token, secret) as JwtPayload
-        req.user = decoded
-        next()
-    } catch (error) {
-        res.status(401).json({ error: "Token tidak valid atau sudah kadaluarsa." })
+        const decoded = jwt.verify(token, secret) as JwtPayload;
+        req.user = decoded;
+        next();
+    } catch {
+        res.status(401).json({
+            error: "Token tidak valid atau sudah kadaluarsa."
+        });
     }
 }

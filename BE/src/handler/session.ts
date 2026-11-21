@@ -259,6 +259,13 @@ export const updateSessionStatus: RequestHandler<{ sessionId: string }> = async 
                         type: "TEACHER_PAYOUT",
                         description: `Pembayaran dari sesi #${session.id}`
                     }
+                }),
+                prisma.userSkill.deleteMany({
+                    where: {
+                        userId: session.studentId,
+                        skillId: session.skillId,
+                        type: "LEARNING"
+                    }
                 })
             ])
 
@@ -303,6 +310,13 @@ export const updateSessionStatus: RequestHandler<{ sessionId: string }> = async 
                         studentId: session.studentId,
                         teacherId: session.teacherId,
                         skillName: skill?.name ?? "Unknown Skill"
+                    }
+                }),
+                prisma.userSkill.deleteMany({
+                    where: {
+                        userId: session.studentId,
+                        skillId: session.skillId,
+                        type: "LEARNING"
                     }
                 })
             ])

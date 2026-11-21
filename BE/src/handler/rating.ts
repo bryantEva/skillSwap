@@ -4,18 +4,13 @@ import { prisma } from "../prisma.js"
 // ─── Tambah Rating (hanya bisa setelah sesi COMPLETED) ────────────────────────
 export const addRating: RequestHandler<{ sessionId: string }> = async (req, res) => {
     const sessionId = parseInt(req.params.sessionId)
-    const { stars, comment, revieweeId } = req.body
+    const { stars, comment } = req.body
 
     // reviewerId diambil dari token JWT (bukan dari body)
     const reviewerId = req.user!.userId
 
     if (!stars || stars < 1 || stars > 5) {
         res.status(400).json({ error: "Stars wajib diisi antara 1 sampai 5." })
-        return
-    }
-
-    if (!revieweeId) {
-        res.status(400).json({ error: "revieweeId wajib diisi." })
         return
     }
 
@@ -39,8 +34,8 @@ export const addRating: RequestHandler<{ sessionId: string }> = async (req, res)
             session.teacherId === reviewerId ||
             session.studentId === reviewerId
 
-        if (!isParticipant) {
-            res.status(403).json({ error: "Kamu bukan peserta dari sesi ini." })
+        if (session.studentId !== reviewerId) {
+            res.status(403).json({ error: "Hanya student yang bisa memberi rating." })
             return
         }
 
@@ -61,9 +56,9 @@ export const addRating: RequestHandler<{ sessionId: string }> = async (req, res)
             data: {
                 sessionId,
                 reviewerId,
-                revieweeId: parseInt(revieweeId),
-                stars: parseInt(stars),
-                comment: comment ?? null
+                revieweeId: session.teacherId,
+                stars,
+                comment: comment?.trim() || null
             }
         })
 
