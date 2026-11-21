@@ -253,7 +253,7 @@ export default function SkillSetup() {
                             role="combobox"
                             aria-expanded={showDropdown}
                             aria-controls="skill-suggestions"
-                            className="input-dark pl-[46px]"
+                            className="input-dark pl-11.5"
                         />
                         {showDropdown && (
                             <ul
@@ -393,7 +393,7 @@ export default function SkillSetup() {
                                     onChange={(e) => setTeachCoins(e.target.value)}
                                     placeholder="Coins / session"
                                     aria-label="Price in coins per session (optional)"
-                                    className="h-11 w-full rounded-full border border-night bg-card px-4 text-[14px] text-pampas outline-none placeholder:text-[#8b897f] sm:w-[150px]"
+                                    className="h-11 w-full rounded-full border border-night bg-card px-4 text-[14px] text-pampas outline-none placeholder:text-[#8b897f] sm:w-37.5"
                                 />
                                 <button
                                     type="submit"

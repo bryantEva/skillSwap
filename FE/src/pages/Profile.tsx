@@ -91,7 +91,7 @@ export default function Profile() {
                                         ✓ Verified
                                     </span>
                                 )}
-                                {profile.subscriptions[0] && (
+                                {profile.subscriptions?.[0] && (
                                     <span className="inline-flex h-6 items-center rounded-full bg-olive px-2.5 text-[12px] font-medium text-pampas">
                                         {profile.subscriptions[0].planName} member
                                     </span>

@@ -55,6 +55,7 @@ export interface Subscription {
 }
 
 export interface UserProfile {
+    instagramUsername: any
     id: number
     email: string
     name: string | null

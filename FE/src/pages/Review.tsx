@@ -34,11 +34,11 @@ export default function Review() {
     const alreadyRated = session?.ratings.some((r) => r.reviewerId === me.id)
     const completedTogether = session
         ? all.filter(
-              (s) =>
-                  s.status === "COMPLETED" &&
-                  s.skill.id === session.skill.id &&
-                  (s.teacherId === other?.id || s.studentId === other?.id)
-          ).length || 1
+            (s) =>
+                s.status === "COMPLETED" &&
+                s.skill.id === session.skill.id &&
+                (s.teacherId === other?.id || s.studentId === other?.id)
+        ).length || 1
         : 0
 
     const submit = async () => {
@@ -46,7 +46,7 @@ export default function Review() {
         setBusy(true)
         setError(null)
         try {
-            await api.addRating(session.id, { stars, comment: comment.trim() || undefined, revieweeId: other.id })
+            await api.addRating(session.id, { stars, comment: comment.trim() || undefined })
             if (isStudent && session.certificate) navigate(`/sessions/${session.id}/certificate`)
             else navigate("/sessions", { state: { flash: "Terima kasih! Review kamu sudah terkirim." } })
         } catch (err) {
@@ -79,23 +79,33 @@ export default function Review() {
                         Go to my sessions →
                     </Link>
                 </div>
+            ) : !isStudent ? (
+                <div className="mt-6">
+                    <h1 className="title-xl">Session completed</h1>
+                    <p className="mt-3 text-[17px] leading-6.75 text-muted">
+                        Review untuk sesi {session.skill.name} ini diberikan oleh {displayName(other.name)} sebagai student.
+                    </p>
+                    <Link to="/sessions" className="btn-primary mt-6">
+                        Go to my sessions →
+                    </Link>
+                </div>
             ) : (
                 <>
                     <span className="mt-6 grid size-16 place-items-center rounded-full bg-forest text-[30px] text-mint" aria-hidden>
                         ✓
                     </span>
                     <h1 className="title-xl mt-4">Session completed</h1>
-                    <p className="mt-3 text-[17px] leading-[27px] text-muted">
+                    <p className="mt-3 text-[17px] leading-6.75 text-muted">
                         {session.skill.name}
                         <br />
                         You completed {completedTogether > 1 ? `all ${completedTogether} sessions` : "your session"} with{" "}
                         {displayName(other.name)}.
                     </p>
 
-                    <div className="card-dark mt-5 flex items-center gap-3.5 p-[17px]">
+                    <div className="card-dark mt-5 flex items-center gap-3.5 p-4.25">
                         <span
                             className={cn(
-                                "grid size-[52px] shrink-0 place-items-center rounded-xl text-[20px] text-pampas",
+                                "grid size-13 shrink-0 place-items-center rounded-xl text-[20px] text-pampas",
                                 tintBg[tintFor(session.skill.name)]
                             )}
                         >

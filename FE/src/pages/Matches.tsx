@@ -51,7 +51,7 @@ export default function Matches() {
             </div>
 
             <h1 className="title-xl mt-7">Your Skill Matches</h1>
-            <p className="mt-3 text-[17px] leading-[25px] text-muted">Find the right people to learn from and grow together.</p>
+            <p className="mt-3 text-[17px] leading-6.25 text-muted">Find the right people to learn from and grow together.</p>
 
             <div className="mt-5 flex flex-wrap gap-2" role="tablist" aria-label="Filter matches">
                 {FILTERS.map((f) => (
@@ -114,7 +114,7 @@ function SkillRow({ label, skills }: { label: string; skills: UserSkill[] }) {
     if (skills.length === 0) return null
     return (
         <div className="flex items-start gap-2">
-            <span className="w-[88px] shrink-0 pt-1 text-[12px] whitespace-nowrap text-dim">{label}</span>
+            <span className="w-22 shrink-0 pt-1 text-[12px] whitespace-nowrap text-dim">{label}</span>
             <div className="flex flex-wrap gap-1.5">
                 {skills.slice(0, 4).map((s) => (
                     <Chip key={s.id} tint={tintFor(s.skill.name)} size="sm">
@@ -130,7 +130,7 @@ function SkillRow({ label, skills }: { label: string; skills: UserSkill[] }) {
 function MatchCard({ match, featured }: { match: MatchResult; featured: boolean }) {
     const { user, score, teaches, wants } = match
     return (
-        <article className="card-dark p-[18px]">
+        <article className="card-dark p-4.5">
             <div className="flex flex-wrap items-start gap-3.5">
                 <Avatar src={user.avatarUrl} name={user.name} size={50} />
                 <div className="min-w-0 flex-1">
@@ -156,7 +156,7 @@ function MatchCard({ match, featured }: { match: MatchResult; featured: boolean 
                     </Link>
                 </div>
             </div>
-            <div className="mt-4 flex flex-col gap-2 sm:pl-[64px]">
+            <div className="mt-4 flex flex-col gap-2 sm:pl-16">
                 <SkillRow label="Teaches" skills={teaches} />
                 <SkillRow label="Wants to learn" skills={wants} />
             </div>

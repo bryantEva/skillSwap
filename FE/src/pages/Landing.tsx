@@ -16,7 +16,7 @@ export default function Landing() {
 
     return (
         <SplitLayout art={art.landing} artAlt="Illustration of a learner at a laptop" artWidth={660} artOnMobile>
-            <div className="flex max-w-[520px] flex-col gap-[11px]">
+            <div className="flex max-w-130 flex-col gap-2.75">
                 <h1 className="font-display text-[44px] leading-[1.02] font-bold tracking-[-0.02em] text-black sm:text-[62px]">
                     Skills that pay with
                     <br />
@@ -28,7 +28,7 @@ export default function Landing() {
                     Exchange skills or book a session.
                 </p>
 
-                <div className="flex flex-wrap gap-3 pt-[15px]">
+                <div className="flex flex-wrap gap-3 pt-3.75">
                     <Link to="/browse" className="btn-outline">
                         Find a Skill →
                     </Link>
@@ -37,7 +37,7 @@ export default function Landing() {
                     </Link>
                 </div>
 
-                <ol className="mt-[70px] flex items-start gap-1 sm:gap-2" aria-label="How SkillSwap works">
+                <ol className="mt-17.5 flex items-start gap-1 sm:gap-2" aria-label="How SkillSwap works">
                     {STEPS.map((s, i) => (
                         <Fragment key={s.label}>
                             {i > 0 && (
@@ -45,10 +45,10 @@ export default function Landing() {
                                     →
                                 </li>
                             )}
-                            <li className="flex w-[72px] flex-col items-center gap-[7.5px] sm:w-[96px]">
+                            <li className="flex w-18 flex-col items-center gap-[7.5px] sm:w-24">
                                 <span className="grid size-14 place-items-center rounded-full border-4 border-sun-soft bg-sun text-[22px] font-medium text-cod sm:size-16 sm:text-[24px]">
                                     {s.image ? (
-                                        <img src={s.image} alt="" className="h-[26px] w-[36px] object-contain sm:h-[30px] sm:w-[42px]" />
+                                        <img src={s.image} alt="" className="h-6.5 w-9 object-contain sm:h-7.5 sm:w-10.5" />
                                     ) : (
                                         s.glyph
                                     )}

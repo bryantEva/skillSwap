@@ -163,7 +163,7 @@ export const api = {
         patch<{ message: string; data: Session }>(`/session/${sessionId}/status`, { status }),
 
     // Rating
-    addRating: (sessionId: number, data: { stars: number; comment?: string; revieweeId: number }) =>
+    addRating: (sessionId: number, data: { stars: number; comment?: string }) =>
         post<{ message: string }>(`/session/${sessionId}/rating`, data),
     getUserRatings: (userId: number) => get<RatingsResponse>(`/user/${userId}/ratings`),
 

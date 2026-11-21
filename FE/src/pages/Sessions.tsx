@@ -228,9 +228,9 @@ function SessionCard({
                     )}
                     {s.status === "COMPLETED" && (
                         <>
-                            {!rated && (
+                            {!iTeach && !rated && (
                                 <Link to={`/sessions/${s.id}/review`} className="btn-light">
-                                    Leave a review →
+                                    Leave a review
                                 </Link>
                             )}
                             {!iTeach && s.certificate && (
