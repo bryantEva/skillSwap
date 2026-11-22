@@ -10,7 +10,7 @@ import { useAuth, useCurrentUser } from "../context/AuthContext"
 import { useAsync } from "../hooks/useAsync"
 import { api } from "../lib/api"
 import { cn } from "../lib/cn"
-import { defaultSchedule, displayName, firstName, levelLabel } from "../lib/format"
+import { defaultSchedule, displayName, firstName, levelLabel, toLocalInput } from "../lib/format"
 import type { UserSkill } from "../types"
 
 type Mode = "swap" | "coins"
@@ -87,7 +87,7 @@ export default function CreateSwap() {
                 coinAmount: mode === "coins" ? price : undefined,
                 scheduledAt: when.toISOString()
             })
-            if (mode === "coins") refreshUser().catch(() => {})
+            if (mode === "coins") refreshUser().catch(() => { })
             navigate("/sessions", { state: { flash: res.message } })
         } catch (err) {
             setError((err as Error).message)
@@ -100,13 +100,13 @@ export default function CreateSwap() {
         <SplitLayout art={art.swap} artAlt="Illustration of a learner celebrating">
             <div className="flex items-center gap-3">
                 <BackLink fallback="/browse" />
-                <span className="inline-flex h-[27px] items-center gap-1.5 rounded-full bg-olive px-3 text-[12px] font-medium text-pampas">
+                <span className="inline-flex h-6.75 items-center gap-1.5 rounded-full bg-olive px-3 text-[12px] font-medium text-pampas">
                     <span aria-hidden>⇄</span> Swap Request
                 </span>
             </div>
 
             <h1 className="title-xl mt-3">Create a Skill Swap</h1>
-            <p className="mt-3 text-[17px] leading-[25px] text-muted">
+            <p className="mt-3 text-[17px] leading-6.25 text-muted">
                 {mode === "swap" ? "Exchange skills, grow together." : "Book a session and pay with your coins."}
             </p>
 
@@ -170,7 +170,7 @@ export default function CreateSwap() {
                                     </div>
                                 )
                             ) : (
-                                <div className="flex min-h-[72px] items-center gap-3.5 rounded-[14px] bg-card px-3.5 py-3">
+                                <div className="flex min-h-18 items-center gap-3.5 rounded-[14px] bg-card px-3.5 py-3">
                                     <span className="grid size-11 place-items-center rounded-full bg-olive">
                                         <CoinDot size={20} />
                                     </span>
@@ -227,13 +227,14 @@ export default function CreateSwap() {
                         <input
                             type="datetime-local"
                             value={scheduledAt}
+                            min={toLocalInput(new Date())}
                             onChange={(e) => setScheduledAt(e.target.value)}
-                            className="input-dark [color-scheme:dark]"
+                            className="input-dark scheme-dark"
                         />
                     </label>
 
                     {/* Summary */}
-                    <div className="card-dark mt-5 p-[17px]">
+                    <div className="card-dark mt-5 p-4.25">
                         <p className="font-display text-[15px] font-semibold">Swap summary</p>
                         <div className="mt-3 flex flex-col gap-2.5 text-[15px]">
                             {mode === "swap" ? (
@@ -268,8 +269,8 @@ export default function CreateSwap() {
                             {mode === "swap"
                                 ? "Fair exchange: 1 session given, 1 session received."
                                 : insufficient
-                                  ? `Not enough coins — you need ${price - me.coins} more.`
-                                  : "Coins are held in escrow and only released when the session is completed."}
+                                    ? `Not enough coins — you need ${price - me.coins} more.`
+                                    : "Coins are held in escrow and only released when the session is completed."}
                         </p>
                     </div>
 

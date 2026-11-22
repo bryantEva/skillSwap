@@ -1,7 +1,7 @@
 // Tipe data mengikuti response BE (BE/src/handler/*.ts & prisma/schema.prisma)
 
 export type SessionType = "TWO_WAY" | "ONE_WAY"
-export type SessionStatus = "PENDING" | "ONGOING" | "COMPLETED" | "CANCELLED"
+export type SessionStatus = "PENDING" | "ONGOING" | "CONFIRMED" | "COMPLETED" | "CANCELLED"
 export type SkillOfferType = "OFFERING" | "LEARNING"
 export type ProficiencyLevel = "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT"
 export type TransactionType =

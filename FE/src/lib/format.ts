@@ -53,6 +53,7 @@ export const levelLabel: Record<ProficiencyLevel, string> = {
 export const statusLabel: Record<SessionStatus, string> = {
     PENDING: "Pending",
     ONGOING: "Ongoing",
+    CONFIRMED: "Confirmed",
     COMPLETED: "Completed",
     CANCELLED: "Cancelled"
 }
@@ -60,8 +61,7 @@ export const statusLabel: Record<SessionStatus, string> = {
 /** Nilai default untuk input datetime-local: besok jam 19:00 waktu lokal */
 export function defaultSchedule() {
     const d = new Date()
-    d.setDate(d.getDate() + 1)
-    d.setHours(19, 0, 0, 0)
+    d.setHours(d.getHours() + 1, 0, 0, 0)
     return toLocalInput(d)
 }
 

@@ -20,6 +20,7 @@ enum SessionType {
 
 enum SessionStatus {
   PENDING
+  CONFIRMED
   ONGOING
   COMPLETED
   CANCELLED
@@ -150,6 +151,7 @@ model Session {
   studentId       Int
   skillId         Int
   exchangeSkillId Int?
+  requesterId     Int?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 

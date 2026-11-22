@@ -194,10 +194,18 @@ export const updateSessionStatus: RequestHandler<{ sessionId: string }> = async 
     const sessionId = parseInt(req.params.sessionId)
     const { status } = req.body
 
-    const validStatuses = ["ONGOING", "COMPLETED", "CANCELLED"]
+    const validStatuses = ["CONFIRMED", "ONGOING", "COMPLETED", "CANCELLED"]
     if (!validStatuses.includes(status)) {
         res.status(400).json({ error: `Status tidak valid. Gunakan: ${validStatuses.join(", ")}` })
         return
+    }
+
+    const allowedTransitions: Record<string, string[]> = {
+        PENDING: ["CONFIRMED", "CANCELLED"],
+        CONFIRMED: ["ONGOING", "CANCELLED"],
+        ONGOING: ["COMPLETED", "CANCELLED"],
+        COMPLETED: [],
+        CANCELLED: []
     }
 
     try {
@@ -219,16 +227,47 @@ export const updateSessionStatus: RequestHandler<{ sessionId: string }> = async 
 
         // Validasi transisi status
         const allowedTransitions: Record<string, string[]> = {
-            PENDING: ["ONGOING", "CANCELLED"],
+            PENDING: ["CONFIRMED", "CANCELLED"],
+            CONFIRMED: ["ONGOING", "CANCELLED"],
             ONGOING: ["COMPLETED", "CANCELLED"],
             COMPLETED: [],
             CANCELLED: []
         }
-
         if (!allowedTransitions[session.status].includes(status)) {
             res.status(400).json({
                 error: `Tidak bisa mengubah status dari ${session.status} ke ${status}.`
             })
+            return
+        }
+
+        if (status === "CONFIRMED") {
+            const requesterOfSession = session.requesterId ?? session.studentId
+            if (requesterOfSession === requesterId) {
+                res.status(403).json({ error: "Sesi ini harus disetujui oleh pihak lain." })
+                return
+            }
+
+            // TWO_WAY: konfirmasi juga record kembarannya (peran terbalik)
+            await prisma.session.updateMany({
+                where: {
+                    status: "PENDING",
+                    OR: [
+                        { id: session.id },
+                        ...(session.type === "TWO_WAY"
+                            ? [{
+                                type: "TWO_WAY" as const,
+                                teacherId: session.studentId,
+                                studentId: session.teacherId,
+                                scheduledAt: session.scheduledAt
+                            }]
+                            : [])
+                    ]
+                },
+                data: { status: "CONFIRMED" }
+            })
+
+            const updated = await prisma.session.findUnique({ where: { id: sessionId } })
+            res.status(200).json({ message: "Sesi disetujui.", data: updated })
             return
         }
 

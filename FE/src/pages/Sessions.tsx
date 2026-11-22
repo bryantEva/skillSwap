@@ -24,12 +24,14 @@ const FILTERS: Array<{ id: Filter; label: string }> = [
 
 const statusStyle: Record<SessionStatus, string> = {
     PENDING: "bg-olive text-pampas",
+    CONFIRMED: "bg-forest text-mint",
     ONGOING: "bg-navy text-pampas",
     COMPLETED: "bg-forest text-mint",
     CANCELLED: "bg-maroon text-[#f3c9c0]"
 }
 
-const isActive = (s: Session) => s.status === "PENDING" || s.status === "ONGOING"
+const isActive = (s: Session) =>
+    s.status === "PENDING" || s.status === "CONFIRMED" || s.status === "ONGOING"
 
 export default function Sessions() {
     const me = useCurrentUser()
@@ -61,11 +63,12 @@ export default function Sessions() {
         }
     }, [sessions.data, filter])
 
-    const changeStatus = async (s: Session, status: "ONGOING" | "COMPLETED" | "CANCELLED") => {
+    const changeStatus = async (s: Session, status: "CONFIRMED" | "ONGOING" | "COMPLETED" | "CANCELLED") => {
         const confirmText: Record<typeof status, string | null> = {
             ONGOING: null,
             COMPLETED: `Tandai sesi ${s.skill.name} sebagai selesai?${s.type === "ONE_WAY" ? ` ${s.coinAmount} koin akan dikirim ke pengajar.` : ""}`,
-            CANCELLED: `Batalkan sesi ${s.skill.name}?${s.type === "ONE_WAY" ? " Koin di escrow akan dikembalikan ke student." : ""}`
+            CANCELLED: `Batalkan sesi ${s.skill.name}?${s.type === "ONE_WAY" ? " Koin di escrow akan dikembalikan ke student." : ""}`,
+            CONFIRMED: null
         }
         const text = confirmText[status]
         if (text && !window.confirm(text)) return
@@ -168,9 +171,12 @@ function SessionCard({
     s: Session
     meId: number
     busy: boolean
-    onStatus: (s: Session, status: "ONGOING" | "COMPLETED" | "CANCELLED") => void
+    onStatus: (s: Session, status: "ONGOING" | "CONFIRMED" | "COMPLETED" | "CANCELLED") => void
 }) {
     const iTeach = s.teacherId === meId
+
+    const iRequested = (s.requesterId ?? s.studentId) === meId
+
     const other = iTeach ? s.student : s.teacher
     const rated = s.ratings.some((r) => r.reviewerId === meId)
 
@@ -200,13 +206,35 @@ function SessionCard({
                         </span>
                     </p>
                     <p className="text-[12px] text-dim">
-                        {s.type === "TWO_WAY" ? "Skill swap" : `Paid session · ${s.coinAmount} coins${s.status === "PENDING" || s.status === "ONGOING" ? " in escrow" : ""}`}
+                        {s.type === "TWO_WAY" ? "Skill swap" : `Paid session · ${s.coinAmount} coins${isActive(s) ? " in escrow" : ""}`}
                     </p>
+                    {s.status === "PENDING" && !iRequested && (
+                        <p className="text-[12px] text-mint">{displayName(other.name)} requested this session</p>
+                    )}
                 </div>
 
                 <div className="flex flex-wrap gap-2">
                     {busy && <Spinner className="size-4 self-center text-pampas" />}
                     {s.status === "PENDING" && (
+                        iRequested ? (
+                            <>
+                                <span className="self-center text-[13px] text-dim">Waiting for approval</span>
+                                <button type="button" disabled={busy} onClick={() => onStatus(s, "CANCELLED")} className="btn-ghost-dark">
+                                    Cancel
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <button type="button" disabled={busy} onClick={() => onStatus(s, "CONFIRMED")} className="btn-light">
+                                    Accept
+                                </button>
+                                <button type="button" disabled={busy} onClick={() => onStatus(s, "CANCELLED")} className="btn-ghost-dark">
+                                    Decline
+                                </button>
+                            </>
+                        )
+                    )}
+                    {s.status === "CONFIRMED" && (
                         <>
                             <button type="button" disabled={busy} onClick={() => onStatus(s, "ONGOING")} className="btn-light">
                                 Start

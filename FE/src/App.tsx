@@ -16,7 +16,7 @@ import Certificates from "./pages/Certificates"
 import Wallet from "./pages/Wallet"
 import About from "./pages/About"
 import NotFound from "./pages/NotFound"
-import BuyCoins from "./pages/buyCoins"
+import BuyCoins from "./pages/BuyCoins"
 
 function ScrollToTop() {
     const { pathname } = useLocation()
