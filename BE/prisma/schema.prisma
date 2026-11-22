@@ -8,8 +8,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DIRECT_URL")
+  provider  = "postgresql"
+  url       = env("DIRECT_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum SessionType {
@@ -31,6 +32,7 @@ enum TransactionType {
   REFUND
   SUBSCRIPTION_PAYMENT
   WITHDRAWAL
+  COIN_PURCHASE
 }
 
 enum SkillOfferType {
@@ -43,6 +45,13 @@ enum ProficiencyLevel {
   INTERMEDIATE
   ADVANCED
   EXPERT
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  EXPIRED
 }
 
 model User {
@@ -69,6 +78,7 @@ model User {
   receivedRatings      Rating[]          @relation("RevieweeRatings")
   issuedCertificates   Certificate[]     @relation("TeacherCertificates")
   receivedCertificates Certificate[]     @relation("StudentCertificates")
+  coinOrders           CoinOrder[]
 
   @@map("users")
 }
@@ -167,6 +177,38 @@ model CoinTransaction {
   session Session? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
 
   @@map("coin_transactions")
+}
+
+model CoinOrder {
+  id            Int           @id @default(autoincrement())
+  orderCode     String        @unique
+  userId        Int
+  packageId     Int
+  coins         Int // snapshot, supaya perubahan harga paket tidak mengubah order lama
+  amount        Int // snapshot harga (Rupiah)
+  status        PaymentStatus @default(PENDING)
+  paymentMethod String?
+  paidAt        DateTime?
+  expiresAt     DateTime
+  createdAt     DateTime      @default(now())
+
+  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  package CoinPackage @relation(fields: [packageId], references: [id])
+
+  @@map("coin_orders")
+}
+
+model CoinPackage {
+  id        Int      @id @default(autoincrement())
+  name      String
+  coins     Int
+  price     Int // dalam Rupiah
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  orders CoinOrder[]
+
+  @@map("coin_packages")
 }
 
 model Rating {

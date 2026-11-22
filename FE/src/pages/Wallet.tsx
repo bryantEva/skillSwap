@@ -9,6 +9,7 @@ import { cn } from "../lib/cn"
 import { formatDate, formatShortDateTime } from "../lib/format"
 import { tintBg, type Tint } from "../lib/tints"
 import type { TransactionType } from "../types"
+import { Link } from "react-router-dom"
 
 // Harus sama dengan PLAN_PRICES di BE/src/handler/subscription.ts
 const PLANS: Array<{ id: string; name: string; price: number; tint: Tint; perks: string[] }> = [
@@ -23,7 +24,8 @@ const txLabel: Record<TransactionType, string> = {
     TEACHER_PAYOUT: "Session payout",
     REFUND: "Refund",
     SUBSCRIPTION_PAYMENT: "Subscription",
-    WITHDRAWAL: "Withdrawal"
+    WITHDRAWAL: "Withdrawal",
+    COIN_PURCHASE: "Coin purchase"
 }
 
 export default function Wallet() {
@@ -67,7 +69,7 @@ export default function Wallet() {
     return (
         <CenterLayout width={720}>
             <h1 className="title-xl">Your Coins</h1>
-            <p className="mt-3 text-[17px] leading-[25px] text-muted">Earn coins by teaching, spend them to learn.</p>
+            <p className="mt-3 text-[17px] leading-6.25 text-muted">Earn coins by teaching, spend them to learn.</p>
 
             {data.error ? (
                 <div className="mt-6">
@@ -105,6 +107,9 @@ export default function Wallet() {
                         >
                             {busy === "daily" ? <Spinner className="size-4" /> : claimedToday ? "Claimed today ✓" : "Claim +10 daily"}
                         </button>
+                        <Link to="/coins/buy" className="btn-ghost-dark h-11 px-5">
+                            Buy coins
+                        </Link>
                     </div>
 
                     {msg && (
@@ -154,6 +159,7 @@ export default function Wallet() {
 
                     {/* Riwayat */}
                     <h2 className="title-section mt-8 mb-3">History</h2>
+
                     {txs.length === 0 ? (
                         <p className="text-[15px] text-muted">No transactions yet. Claim your daily coins to get started.</p>
                     ) : (

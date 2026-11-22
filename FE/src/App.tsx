@@ -16,6 +16,7 @@ import Certificates from "./pages/Certificates"
 import Wallet from "./pages/Wallet"
 import About from "./pages/About"
 import NotFound from "./pages/NotFound"
+import BuyCoins from "./pages/buyCoins"
 
 function ScrollToTop() {
     const { pathname } = useLocation()
@@ -51,6 +52,7 @@ export default function App() {
                 <Route path="/sessions/:sessionId/certificate" element={guard(<CertificatePage />)} />
                 <Route path="/certificates" element={guard(<Certificates />)} />
                 <Route path="/wallet" element={guard(<Wallet />)} />
+                <Route path="/coins/buy" element={<BuyCoins />} />
 
                 <Route path="*" element={<NotFound />} />
             </Routes>

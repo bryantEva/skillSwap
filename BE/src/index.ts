@@ -14,6 +14,7 @@ import { getUserSkills, deleteUserSkill } from "./handler/userSkill.js"
 
 // Middleware
 import { verifyToken } from "./middleware/auth.js"
+import { getCoinPackages, createCoinOrder, getUserCoinOrders, simulatePayment } from "./controllers/coinOrder.js"
 
 const app = express()
 app.use(express.json())
@@ -58,6 +59,11 @@ app.post("/user/:userId/daily-login", verifyToken, dailyLogin)
 // Subscription
 app.post("/user/:userId/subscription", verifyToken, addSubscription)
 app.get("/user/:userId/subscription", verifyToken, getSubscription)
+
+app.get("/coin-packages", getCoinPackages)
+app.post("/user/:userId/coin-orders", verifyToken, createCoinOrder)
+app.get("/user/:userId/coin-orders", verifyToken, getUserCoinOrders)
+app.post("/coin-orders/:orderCode/simulate-pay", verifyToken, simulatePayment)
 
 // ─── Start Server ─────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000

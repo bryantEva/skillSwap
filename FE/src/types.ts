@@ -11,6 +11,7 @@ export type TransactionType =
     | "REFUND"
     | "SUBSCRIPTION_PAYMENT"
     | "WITHDRAWAL"
+    | "COIN_PURCHASE"
 
 export interface AuthUser {
     id: number
@@ -116,6 +117,17 @@ export interface CoinTransactionLite {
     type: TransactionType
     description: string | null
     createdAt: string
+}
+
+export interface CoinPackage { id: number; name: string; coins: number; price: number }
+export interface CoinOrder {
+    id: number
+    orderCode: string
+    coins: number
+    amount: number
+    status: "PENDING" | "PAID" | "FAILED" | "EXPIRED"
+    createdAt: string
+    package?: { name: string }
 }
 
 export interface Session {

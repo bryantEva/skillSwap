@@ -2,6 +2,8 @@ import type {
     AuthUser,
     Category,
     CertificateDetail,
+    CoinOrder,
+    CoinPackage,
     CoinTransaction,
     ProficiencyLevel,
     PublicUser,
@@ -177,6 +179,14 @@ export const api = {
     getCoinTransactions: (userId: number) =>
         get<{ data: CoinTransaction[] }>(`/user/${userId}/coins`).then((r) => r.data),
     claimDaily: (userId: number) => post<{ message: string; coins: number }>(`/user/${userId}/daily-login`),
+
+    getCoinPackages: () => get<{ data: CoinPackage[] }>("/coin-packages").then((r) => r.data),
+    createCoinOrder: (userId: number, packageId: number) =>
+        post<{ message: string; data: CoinOrder }>(`/user/${userId}/coin-orders`, { packageId }),
+    simulatePay: (orderCode: string) =>
+        post<{ message: string }>(`/coin-orders/${orderCode}/simulate-pay`),
+    getCoinOrders: (userId: number) =>
+        get<{ data: CoinOrder[] }>(`/user/${userId}/coin-orders`).then((r) => r.data),
 
     // Subscription
     getSubscription: (userId: number) => get<SubscriptionResponse>(`/user/${userId}/subscription`),
