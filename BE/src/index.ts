@@ -1,5 +1,6 @@
 import "dotenv/config"
 import express from "express"
+import cors from "cors"
 
 // Handler
 import { login, register } from "./handler/auth.js"
@@ -71,8 +72,7 @@ app.post("/user/:userId/coin-orders", verifyToken, createCoinOrder)
 app.get("/user/:userId/coin-orders", verifyToken, getUserCoinOrders)
 app.post("/coin-orders/:orderCode/simulate-pay", verifyToken, simulatePayment)
 
-// ─── Start Server ─────────────────────────────────────────────────────────────
-const PORT = process.env.PORT || 3000
+const PORT = Number(process.env.PORT) || 3000
 
 // ─── Global Error Handler ─────────────────────────────────────────────────────
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -82,6 +82,6 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
     res.status(status).json({ error: message })
 })
 
-app.listen(PORT, () => {
-    console.log(`🚀 SkillSwap BE berjalan di http://localhost:${PORT}`)
+app.listen(PORT, "0.0.0.0", () => {
+    console.log(`🚀 SkillSwap BE berjalan di port ${PORT}`)
 })
