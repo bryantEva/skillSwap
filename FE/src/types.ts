@@ -131,6 +131,7 @@ export interface CoinOrder {
 }
 
 export interface Session {
+    requesterId?: number | null
     id: number
     type: SessionType
     status: SessionStatus
