@@ -104,7 +104,7 @@ export const getUserCoinOrders: RequestHandler<{ userId: string }> = async (req,
 
 // HANYA untuk development: pura-pura pembayaran berhasil
 export const simulatePayment: RequestHandler<{ orderCode: string }> = async (req, res) => {
-    if (process.env.NODE_ENV === "production") {
+    if (process.env.ALLOW_SIMULATE_PAY !== "true") {
         res.status(404).json({ error: "Not found." })
         return
     }
