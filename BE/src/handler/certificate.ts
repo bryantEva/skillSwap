@@ -9,8 +9,8 @@ export const getCertificate: RequestHandler<{ sessionId: string }> = async (req,
         const certificate = await prisma.certificate.findUnique({
             where: { sessionId },
             include: {
-                student: { select: { id: true, name: true, email: true } },
-                teacher: { select: { id: true, name: true, email: true } },
+                student: { select: { id: true, name: true } },
+                teacher: { select: { id: true, name: true } },
                 session: {
                     select: {
                         id: true,
@@ -28,6 +28,12 @@ export const getCertificate: RequestHandler<{ sessionId: string }> = async (req,
             return
         }
 
+        const viewerId = req.user!.userId
+        if (certificate.studentId !== viewerId && certificate.teacherId !== viewerId) {
+            res.status(403).json({ error: "Tidak diizinkan." })
+            return
+        }
+
         res.status(200).json({ data: certificate })
     } catch (error) {
         console.error(error)
@@ -38,6 +44,10 @@ export const getCertificate: RequestHandler<{ sessionId: string }> = async (req,
 // ─── Get semua Certificate milik seorang user (sebagai student) ───────────────
 export const getUserCertificates: RequestHandler<{ userId: string }> = async (req, res) => {
     const userId = parseInt(req.params.userId)
+    if (req.user!.userId !== userId) {
+        res.status(403).json({ error: "Tidak diizinkan." })
+        return
+    }
 
     try {
         const certificates = await prisma.certificate.findMany({

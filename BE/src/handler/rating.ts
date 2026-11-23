@@ -29,11 +29,6 @@ export const addRating: RequestHandler<{ sessionId: string }> = async (req, res)
             return
         }
 
-        // Cek reviewer adalah bagian dari sesi ini
-        const isParticipant =
-            session.teacherId === reviewerId ||
-            session.studentId === reviewerId
-
         if (session.studentId !== reviewerId) {
             res.status(403).json({ error: "Hanya student yang bisa memberi rating." })
             return

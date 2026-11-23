@@ -14,6 +14,11 @@ export const addSession: RequestHandler<{ userId: string }> = async (req, res) =
     }
 
     const teacherId = parseInt(data.teacherId)
+    const when = new Date(data.scheduledAt)
+    if (Number.isNaN(when.getTime()) || when.getTime() < Date.now()) {
+        res.status(400).json({ error: "Jadwal tidak valid atau sudah lewat." })
+        return
+    }
 
     // Validasi teacher tidak boleh sama dengan student
     if (teacherId === studentId) {
@@ -22,6 +27,10 @@ export const addSession: RequestHandler<{ userId: string }> = async (req, res) =
     }
 
     try {
+        if (req.user?.userId !== studentId) {
+            res.status(403).json({ error: "Tidak diizinkan." })
+            return
+        }
         if (data.type === "TWO_WAY") {
             if (!data.exchangeSkillId) {
                 res.status(400).json({ error: "Sesi TWO_WAY wajib menyertakan exchangeSkillId." })
@@ -33,22 +42,24 @@ export const addSession: RequestHandler<{ userId: string }> = async (req, res) =
                     data: {
                         studentId,
                         teacherId,
+                        requesterId: studentId,
                         skillId: parseInt(data.skillId),
                         exchangeSkillId: parseInt(data.exchangeSkillId),
                         type: "TWO_WAY",
                         coinAmount: 0,
-                        scheduledAt: new Date(data.scheduledAt)
+                        scheduledAt: when
                     }
                 }),
                 prisma.session.create({
                     data: {
                         studentId: teacherId,
                         teacherId: studentId,
+                        requesterId: studentId,
                         skillId: parseInt(data.exchangeSkillId),
                         exchangeSkillId: parseInt(data.skillId),
                         type: "TWO_WAY",
                         coinAmount: 0,
-                        scheduledAt: new Date(data.scheduledAt)
+                        scheduledAt: when
                     }
                 })
             ])
@@ -61,7 +72,24 @@ export const addSession: RequestHandler<{ userId: string }> = async (req, res) =
         }
 
         if (data.type === "ONE_WAY") {
-            if (finalCoinAmount <= 0) {
+            const skillId = parseInt(data.skillId)
+
+            const offering = await prisma.userSkill.findUnique({
+                where: {
+                    userId_skillId_type: { userId: teacherId, skillId, type: "OFFERING" }
+                }
+            })
+
+            if (!offering) {
+                res.status(400).json({ error: "Teacher tidak mengajarkan skill ini." })
+                return
+            }
+
+            // Kalau teacher mematok harga, pakai harga itu.
+            // Kalau harganya 0 (fleksibel), pakai tawaran student.
+            const price = offering.offeredCoins > 0 ? offering.offeredCoins : finalCoinAmount
+
+            if (price <= 0) {
                 res.status(400).json({ error: "Sesi ONE_WAY wajib menyertakan harga koin > 0." })
                 return
             }
@@ -76,44 +104,42 @@ export const addSession: RequestHandler<{ userId: string }> = async (req, res) =
                 return
             }
 
-            if (student.coins < finalCoinAmount) {
+            if (student.coins < price) {
                 res.status(400).json({
-                    error: `Saldo koin tidak mencukupi. Saldo: ${student.coins}, Dibutuhkan: ${finalCoinAmount}`
+                    error: `Saldo koin tidak mencukupi. Saldo: ${student.coins}, Dibutuhkan: ${price}`
                 })
                 return
             }
 
-            // Escrow: potong coins student, hold ke escrowCoins
+            // Escrow: potong coins student, hold ke escrowCoins, catat transaksi (satu transaksi)
             const [newSession] = await prisma.$transaction([
                 prisma.session.create({
                     data: {
                         studentId,
                         teacherId,
-                        skillId: parseInt(data.skillId),
+                        requesterId: studentId,
+                        skillId,
                         type: "ONE_WAY",
-                        coinAmount: finalCoinAmount,
-                        scheduledAt: new Date(data.scheduledAt)
+                        coinAmount: price,
+                        scheduledAt: when,
+                        transactions: {
+                            create: {
+                                userId: studentId,
+                                amount: -price,
+                                type: "ESCROW_HOLD",
+                                description: "Escrow untuk sesi baru"
+                            }
+                        }
                     }
                 }),
                 prisma.user.update({
                     where: { id: studentId },
                     data: {
-                        coins: { decrement: finalCoinAmount },
-                        escrowCoins: { increment: finalCoinAmount }
+                        coins: { decrement: price },
+                        escrowCoins: { increment: price }
                     }
                 })
             ])
-
-            // Simpan transaksi escrow (perlu sessionId, jadi di luar transaction)
-            await prisma.coinTransaction.create({
-                data: {
-                    userId: studentId,
-                    sessionId: newSession.id,
-                    amount: -finalCoinAmount,
-                    type: "ESCROW_HOLD",
-                    description: `Escrow untuk sesi #${newSession.id}`
-                }
-            })
 
             res.status(201).json({
                 message: "Sesi ONE_WAY berhasil dibuat. Koin ditahan di escrow.",
@@ -194,6 +220,7 @@ export const updateSessionStatus: RequestHandler<{ sessionId: string }> = async 
     const sessionId = parseInt(req.params.sessionId)
     const { status } = req.body
 
+
     const validStatuses = ["CONFIRMED", "ONGOING", "COMPLETED", "CANCELLED"]
     if (!validStatuses.includes(status)) {
         res.status(400).json({ error: `Status tidak valid. Gunakan: ${validStatuses.join(", ")}` })
@@ -225,14 +252,6 @@ export const updateSessionStatus: RequestHandler<{ sessionId: string }> = async 
             return
         }
 
-        // Validasi transisi status
-        const allowedTransitions: Record<string, string[]> = {
-            PENDING: ["CONFIRMED", "CANCELLED"],
-            CONFIRMED: ["ONGOING", "CANCELLED"],
-            ONGOING: ["COMPLETED", "CANCELLED"],
-            COMPLETED: [],
-            CANCELLED: []
-        }
         if (!allowedTransitions[session.status].includes(status)) {
             res.status(400).json({
                 error: `Tidak bisa mengubah status dari ${session.status} ke ${status}.`
@@ -271,57 +290,63 @@ export const updateSessionStatus: RequestHandler<{ sessionId: string }> = async 
             return
         }
 
+        if (status === "COMPLETED" && session.type === "ONE_WAY" && requesterId !== session.studentId) {
+            res.status(403).json({ error: "Hanya student yang bisa menyelesaikan sesi berbayar." })
+            return
+        }
+
         // ─── COMPLETED: payout koin ke teacher ───────────────────────────────
         if (status === "COMPLETED" && session.type === "ONE_WAY" && session.coinAmount > 0) {
-            await prisma.$transaction([
-                // Update status sesi
-                prisma.session.update({
-                    where: { id: sessionId },
-                    data: { status: "COMPLETED", completedAt: new Date() }
-                }),
-                // Kurangi escrow student
-                prisma.user.update({
-                    where: { id: session.studentId },
-                    data: { escrowCoins: { decrement: session.coinAmount } }
-                }),
-                // Tambah coins teacher
-                prisma.user.update({
-                    where: { id: session.teacherId },
-                    data: { coins: { increment: session.coinAmount } }
-                }),
-                // Catat transaksi payout
-                prisma.coinTransaction.create({
-                    data: {
-                        userId: session.teacherId,
-                        sessionId: session.id,
-                        amount: session.coinAmount,
-                        type: "TEACHER_PAYOUT",
-                        description: `Pembayaran dari sesi #${session.id}`
-                    }
-                }),
-                prisma.userSkill.deleteMany({
-                    where: {
-                        userId: session.studentId,
-                        skillId: session.skillId,
-                        type: "LEARNING"
-                    }
-                })
-            ])
-
-            // Auto-generate certificate
-            const certCount = await prisma.certificate.count()
-            const certNo = `CERT-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, "0")}-${String(certCount + 1).padStart(3, "0")}`
+            const certNo = `CERT-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, "0")}-${String(session.id).padStart(5, "0")}`
             const skill = await prisma.skill.findUnique({ where: { id: session.skillId } })
 
-            await prisma.certificate.create({
-                data: {
-                    certificateNo: certNo,
-                    sessionId: session.id,
-                    studentId: session.studentId,
-                    teacherId: session.teacherId,
-                    skillName: skill?.name ?? "Unknown Skill"
+            try {
+                await prisma.$transaction(async (tx) => {
+                    // 1. Penjaga: hanya satu request yang lolos
+                    const claimed = await tx.session.updateMany({
+                        where: { id: sessionId, status: "ONGOING" },
+                        data: { status: "COMPLETED", completedAt: new Date() }
+                    })
+                    if (claimed.count === 0) throw new Error("ALREADY_PROCESSED")
+
+                    // 2. Baru setelah lolos, urus koin
+                    await tx.user.update({
+                        where: { id: session.studentId },
+                        data: { escrowCoins: { decrement: session.coinAmount } }
+                    })
+                    await tx.user.update({
+                        where: { id: session.teacherId },
+                        data: { coins: { increment: session.coinAmount } }
+                    })
+                    await tx.coinTransaction.create({
+                        data: {
+                            userId: session.teacherId,
+                            sessionId: session.id,
+                            amount: session.coinAmount,
+                            type: "TEACHER_PAYOUT",
+                            description: `Pembayaran dari sesi #${session.id}`
+                        }
+                    })
+                    await tx.userSkill.deleteMany({
+                        where: { userId: session.studentId, skillId: session.skillId, type: "LEARNING" }
+                    })
+                    await tx.certificate.create({
+                        data: {
+                            certificateNo: certNo,
+                            sessionId: session.id,
+                            studentId: session.studentId,
+                            teacherId: session.teacherId,
+                            skillName: skill?.name ?? "Unknown Skill"
+                        }
+                    })
+                })
+            } catch (e) {
+                if ((e as Error).message === "ALREADY_PROCESSED") {
+                    res.status(409).json({ error: "Sesi sudah diproses." })
+                    return
                 }
-            })
+                throw e
+            }
 
             const updatedSession = await prisma.session.findUnique({ where: { id: sessionId } })
             res.status(200).json({
@@ -334,8 +359,7 @@ export const updateSessionStatus: RequestHandler<{ sessionId: string }> = async 
         // ─── COMPLETED TWO_WAY: update status saja ───────────────────────────
         if (status === "COMPLETED" && session.type === "TWO_WAY") {
             const skill = await prisma.skill.findUnique({ where: { id: session.skillId } })
-            const certCount = await prisma.certificate.count()
-            const certNo = `CERT-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, "0")}-${String(certCount + 1).padStart(3, "0")}`
+            const certNo = `CERT-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, "0")}-${String(session.id).padStart(5, "0")}`
 
             await prisma.$transaction([
                 prisma.session.update({
@@ -368,32 +392,69 @@ export const updateSessionStatus: RequestHandler<{ sessionId: string }> = async 
             return
         }
 
+        if (status === "CANCELLED" && session.type === "TWO_WAY") {
+            await prisma.session.updateMany({
+                where: {
+                    status: { in: ["PENDING", "CONFIRMED", "ONGOING"] },
+                    OR: [
+                        { id: session.id },
+                        {
+                            type: "TWO_WAY",
+                            teacherId: session.studentId,
+                            studentId: session.teacherId,
+                            scheduledAt: session.scheduledAt
+                        }
+                    ]
+                },
+                data: { status: "CANCELLED" }
+            })
+
+            const updated = await prisma.session.findUnique({ where: { id: sessionId } })
+            res.status(200).json({ message: "Sesi dibatalkan.", data: updated })
+            return
+        }
+
         // ─── CANCELLED: refund koin ke student ───────────────────────────────
         if (status === "CANCELLED" && session.type === "ONE_WAY" && session.coinAmount > 0) {
-            await prisma.$transaction([
-                prisma.session.update({
-                    where: { id: sessionId },
-                    data: { status: "CANCELLED" }
-                }),
-                // Kembalikan coins ke student
-                prisma.user.update({
-                    where: { id: session.studentId },
-                    data: {
-                        coins: { increment: session.coinAmount },
-                        escrowCoins: { decrement: session.coinAmount }
-                    }
-                }),
-                // Catat transaksi refund
-                prisma.coinTransaction.create({
-                    data: {
-                        userId: session.studentId,
-                        sessionId: session.id,
-                        amount: session.coinAmount,
-                        type: "REFUND",
-                        description: `Refund dari sesi #${session.id} yang dibatalkan`
-                    }
+            try {
+                await prisma.$transaction(async (tx) => {
+                    // 1. Penjaga: hanya satu request yang boleh membatalkan
+                    const claimed = await tx.session.updateMany({
+                        where: {
+                            id: sessionId,
+                            status: { in: ["PENDING", "CONFIRMED", "ONGOING"] }
+                        },
+                        data: { status: "CANCELLED" }
+                    })
+                    if (claimed.count === 0) throw new Error("ALREADY_PROCESSED")
+
+                    // 2. Kembalikan koin dari escrow ke saldo student
+                    await tx.user.update({
+                        where: { id: session.studentId },
+                        data: {
+                            coins: { increment: session.coinAmount },
+                            escrowCoins: { decrement: session.coinAmount }
+                        }
+                    })
+
+                    // 3. Catat transaksi refund
+                    await tx.coinTransaction.create({
+                        data: {
+                            userId: session.studentId,
+                            sessionId: session.id,
+                            amount: session.coinAmount,
+                            type: "REFUND",
+                            description: `Refund dari sesi #${session.id} yang dibatalkan`
+                        }
+                    })
                 })
-            ])
+            } catch (e) {
+                if ((e as Error).message === "ALREADY_PROCESSED") {
+                    res.status(409).json({ error: "Sesi sudah diproses." })
+                    return
+                }
+                throw e
+            }
 
             const updatedSession = await prisma.session.findUnique({ where: { id: sessionId } })
             res.status(200).json({
