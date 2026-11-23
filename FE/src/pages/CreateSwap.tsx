@@ -315,7 +315,7 @@ function SkillPicker({
     const current = skills.find((s) => s.id === value) ?? skills[0]
     const multiple = skills.length > 1
     return (
-        <div className="relative flex min-h-[72px] items-center gap-3.5 rounded-[14px] bg-card px-3.5 py-3 focus-within:ring-2 focus-within:ring-pampas/60">
+        <div className="relative flex min-h-18 items-center gap-3.5 rounded-[14px] bg-card px-3.5 py-3 focus-within:ring-2 focus-within:ring-pampas/60">
             <span className={cn("grid size-11 shrink-0 place-items-center rounded-full text-[14px] text-pampas", glyphClass)}>{glyph}</span>
             <div className="min-w-0 flex-1">
                 <p className="truncate font-display text-[17px] font-semibold text-pampas">{current?.skill.name}</p>

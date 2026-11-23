@@ -12,7 +12,8 @@ export function CoinDot({ size = 18 }: { size?: number }) {
 }
 
 /** Pill "● 60 coins" (olive) seperti di Home */
-export function CoinPill({ coins, to, className }: { coins: number; to?: string; className?: string }) {
+export function CoinPill({ coins, to, className }: { coins?: number | null; to?: string; className?: string }) {
+    const value = coins ?? 0
     const classes = cn(
         "inline-flex h-[34px] items-center gap-2 rounded-full bg-olive pr-4 pl-3 text-[14px] font-medium text-pampas",
         to && "transition hover:brightness-110",
@@ -21,7 +22,7 @@ export function CoinPill({ coins, to, className }: { coins: number; to?: string;
     const body = (
         <>
             <CoinDot />
-            {coins.toLocaleString("en-US")} coins
+            {value.toLocaleString("en-US")} coins
         </>
     )
     return to ? (

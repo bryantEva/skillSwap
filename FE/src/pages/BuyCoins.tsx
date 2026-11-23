@@ -5,7 +5,7 @@ import { useAuth, useCurrentUser } from "../context/AuthContext"
 import { useAsync } from "../hooks/useAsync"
 import { api } from "../lib/api"
 
-const rupiah = (n: number) => `Rp${n.toLocaleString("id-ID")}`
+const rupiah = (n?: number | null) => `Rp${(n ?? 0).toLocaleString("id-ID")}`
 
 export default function BuyCoins() {
     const me = useCurrentUser()
