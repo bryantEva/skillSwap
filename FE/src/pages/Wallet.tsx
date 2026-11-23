@@ -64,7 +64,7 @@ export default function Wallet() {
         }
     }
 
-    const coins = profile?.coins ?? me.coins
+    const coins = profile?.coins ?? me.coins ?? 0
 
     return (
         <CenterLayout width={720}>
@@ -87,7 +87,7 @@ export default function Wallet() {
                         <div className="flex-1">
                             <p className="text-[14px] text-dim">Available balance</p>
                             <p className="font-display text-[34px] leading-tight font-bold tracking-[-0.02em]">
-                                {coins.toLocaleString("en-US")} coins
+                                {(me.coins ?? 0).toLocaleString("en-US")} coins
                             </p>
                             {!!profile?.escrowCoins && (
                                 <p className="text-[13px] text-dim">{profile.escrowCoins} coins held in escrow for booked sessions</p>

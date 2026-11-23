@@ -71,15 +71,15 @@ export default function Home() {
                     <h1 className="font-display text-[28px] leading-[1.15] font-bold tracking-[-0.03em] sm:text-[32px]">
                         {greeting()}, {firstName(me.name, "friend")}
                     </h1>
-                    <p className="mt-1 text-[17px] leading-[25px] text-muted">Keep going! You're one step closer to your goals.</p>
+                    <p className="mt-1 text-[17px] leading-6.25 text-muted">Keep going! You're one step closer to your goals.</p>
                     <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                        <CoinPill coins={me.coins} to="/wallet" />
+                        <CoinPill coins={me.coins ?? 0} to="/wallet" />
                         {!claimedToday && (
                             <button
                                 type="button"
                                 onClick={claimDaily}
                                 disabled={claiming}
-                                className="inline-flex h-[34px] cursor-pointer items-center gap-1.5 rounded-full border border-olive/40 px-3.5 text-[13px] font-medium text-olive transition hover:bg-pampas disabled:opacity-60"
+                                className="inline-flex h-8.5 cursor-pointer items-center gap-1.5 rounded-full border border-olive/40 px-3.5 text-[13px] font-medium text-olive transition hover:bg-pampas disabled:opacity-60"
                             >
                                 {claiming ? <Spinner className="size-3.5" /> : "+10"} Claim daily coins
                             </button>
@@ -248,7 +248,7 @@ function summarize(sessions: Session[], meId: number) {
     const learning = [...bySkill.values()].sort((a, b) => b.last - a.last)
 
     const active = sessions
-        .filter((s) => s.status === "PENDING" || s.status === "ONGOING")
+        .filter((s) => s.status === "PENDING" || s.status === "CONFIRMED" || s.status === "ONGOING")
         .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())
     const now = Date.now() - 2 * 60 * 60 * 1000
     const next = active.find((s) => new Date(s.scheduledAt).getTime() >= now) ?? active[0] ?? null
