@@ -18,6 +18,12 @@ import { getCoinPackages, createCoinOrder, getUserCoinOrders, simulatePayment } 
 
 const app = express()
 app.use(express.json())
+app.use(cors({
+    origin: [
+        "http://localhost:5173",
+        "https://skill-swap-six-indol.vercel.app"
+    ]
+}))
 
 // ─── Public Routes (tidak perlu token) ───────────────────────────────────────
 app.post("/register", register)
