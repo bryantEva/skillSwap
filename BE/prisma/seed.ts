@@ -63,6 +63,17 @@ const data: Record<string, { icon: string; skills: [string, string][] }> = {
             ["Manajemen Waktu", "Produktivitas dan perencanaan"]
         ]
     },
+    Entertainment: {
+        icon: "🎱",
+        skills: [
+            ["Billiard", "Teknik dasar dan strategi bermain billiard"],
+            ["Catur", "Strategi pembukaan hingga endgame"],
+            ["Bermain Game", "Strategi dan teknik game kompetitif"],
+            ["Sulap", "Trik sulap dasar untuk pemula"],
+            ["Stand-up Comedy", "Menulis materi dan tampil di panggung"],
+            ["Memasak", "Resep dan teknik dasar memasak"]
+        ]
+    },
     Akademik: {
         icon: "📚",
         skills: [

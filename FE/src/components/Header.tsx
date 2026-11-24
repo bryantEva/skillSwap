@@ -18,16 +18,16 @@ export function Header() {
 
     const links = user
         ? [
-              { to: "/home", label: "Home" },
-              { to: "/browse", label: "Browse" },
-              { to: "/sessions", label: "Sessions" },
-              { to: "/about", label: "About" }
-          ]
+            { to: "/home", label: "Home" },
+            { to: "/browse", label: "Browse" },
+            { to: "/sessions", label: "Sessions" },
+            { to: "/about", label: "About" }
+        ]
         : [
-              { to: "/", label: "Home" },
-              { to: "/browse", label: "Browse" },
-              { to: "/about", label: "About" }
-          ]
+            { to: "/", label: "Home" },
+            { to: "/browse", label: "Browse" },
+            { to: "/about", label: "About" }
+        ]
 
     const handleLogout = () => {
         logout()
@@ -48,7 +48,7 @@ export function Header() {
                     to={user ? "/home" : "/"}
                     className="px-1.5 font-display text-[26px] leading-[39px] font-bold tracking-[-0.04em] text-[#1b1818]"
                 >
-                    skillswap
+                    skillswapping
                 </Link>
 
                 {/* Desktop */}
