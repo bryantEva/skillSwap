@@ -48,7 +48,7 @@ export function Header() {
                     to={user ? "/home" : "/"}
                     className="px-1.5 font-display text-[26px] leading-[39px] font-bold tracking-[-0.04em] text-[#1b1818]"
                 >
-                    skillswapping
+                    SkillSwapping
                 </Link>
 
                 {/* Desktop */}
