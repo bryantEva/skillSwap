@@ -113,7 +113,7 @@ export function Register() {
 
     return (
         <SplitLayout art={art.setup} artAlt="Illustration of a learner sketching ideas">
-            <h1 className="title-xl">Join SkillSwap.</h1>
+            <h1 className="title-xl">Join SkillSwapping.</h1>
             <p className="mt-3 text-[17px] leading-[25.5px] text-muted">
                 Learn from people. Share what you know.
             </p>

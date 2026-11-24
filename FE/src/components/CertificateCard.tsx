@@ -26,7 +26,7 @@ export function CertificateCard({ studentName, skillName, issuedAt, certificateN
                 className="absolute right-0 bottom-0 h-[60px] w-[90px] bg-cert-corner [clip-path:polygon(100%_0,100%_100%,0_100%)]"
             />
 
-            <p className="font-display text-[20px] leading-6 font-bold tracking-[-0.03em]">skillswap</p>
+            <p className="font-display text-[20px] leading-6 font-bold tracking-[-0.03em]">SkillSwapping</p>
             <p className="mt-1 text-[10px] tracking-[0.22em] text-muted uppercase">Learn · Share · Grow</p>
 
             <h2 className="mt-5 font-serif text-[26px] leading-tight font-medium sm:text-[30px]">Certificate of Completion</h2>
@@ -53,7 +53,7 @@ export function CertificateCard({ studentName, skillName, issuedAt, certificateN
                     ✿
                 </span>
                 <div className="relative z-10 text-right">
-                    <p className="font-serif text-[13px] text-cert-ink italic">SkillSwap Team</p>
+                    <p className="font-serif text-[13px] text-cert-ink italic">SkillSwapping Team</p>
                     <p className="mt-0.5 text-[9px] tracking-[0.2em] text-muted uppercase">Signature</p>
                 </div>
             </div>

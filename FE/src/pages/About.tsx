@@ -18,7 +18,7 @@ export default function About() {
         <SplitLayout art={art.profile} artAlt="Illustration of a learner reading" artWidth={580}>
             <h1 className="title-xl">Small steps. Big growth.</h1>
             <p className="mt-3 text-[17px] leading-[25.5px] text-muted">
-                SkillSwap is a place to learn from people and share what you know. No money needed: swap skills one-for-one, or
+                SkillSwapping is a place to learn from people and share what you know. No money needed: swap skills one-for-one, or
                 use coins you earn by teaching and daily check-ins.
             </p>
 
@@ -37,7 +37,7 @@ export default function About() {
             </ul>
 
             <Link to={isAuthenticated ? "/browse" : "/register"} className="btn-primary mt-6">
-                {isAuthenticated ? "Find a skill →" : "Join SkillSwap →"}
+                {isAuthenticated ? "Find a skill →" : "Join SkillSwapping →"}
             </Link>
         </SplitLayout>
     )

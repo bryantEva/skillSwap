@@ -22,7 +22,7 @@ function listText(names: string[]) {
 
 function aboutText(p: UserProfile, teach: UserSkill[], want: UserSkill[]) {
     const since = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(new Date(p.createdAt))
-    const parts = [`On SkillSwap since ${since}.`]
+    const parts = [`On SkillSwapping since ${since}.`]
     if (teach.length) parts.push(`Happy to help others with ${listText(teach.map((s) => s.skill.name))}.`)
     if (want.length) parts.push(`Currently learning ${listText(want.map((s) => s.skill.name))}.`)
     return parts.join(" ")
